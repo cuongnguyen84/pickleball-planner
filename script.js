@@ -50,56 +50,61 @@ function generateBracketOptions(players, bracketCounts) {
 }
 
 // Hàm display results with select buttons
+// Hàm display results with select buttons (BẢN ĐÃ SỬA)
 function displayResults(suggestions, players, courts, resultDiv) {
     let resultHtml = '<h2 class="text-lg font-semibold mt-4">Các phương án chia bảng:</h2>';
     if (suggestions.length === 0) {
         resultHtml += '<p class="text-red-500">Không tìm thấy phương án chia bảng hợp lệ cho ' + players + ' người chơi với ' + courts + ' sân. Hãy thử điều chỉnh số người chơi hoặc sân.</p>';
-        console.warn('No suggestions generated for players:', players, 'courts:', courts);
     } else {
-        console.log('Suggestions available:', suggestions);
+        // Bọc tất cả PA bằng 1 div grid, 2 cột
+        resultHtml += `<div class="w-full grid grid-cols-[1fr_auto] gap-y-2">`;
         suggestions.forEach((suggestion, index) => {
             const distribution = suggestion.distribution;
-            const allSame = distribution.every(val => val === distribution[0]);
-            let distributionText;
-            if (allSame) {
-                distributionText = 'mỗi bảng ' + distribution[0] + ' người';
-            } else {
-                const counts = {};
-                distribution.forEach(num => {
-                    counts[num] = (counts[num] || 0) + 1;
-                });
-                distributionText = Object.entries(counts)
-                    .map(([num, count]) => count + ' bảng ' + num + ' người')
-                    .join(', ');
+            const numGroups = distribution.length;
+            let counts = {};
+            distribution.forEach(size => {
+                counts[size] = (counts[size] || 0) + 1;
+            });
+            let descriptionArr = [];
+            for (let [size, count] of Object.entries(counts)) {
+                descriptionArr.push(`${count} bảng ${size}`);
             }
-            resultHtml += '<p class="mt-2 flex items-center"><strong>Phương án ' + (index + 1) + ' (' + suggestion.numBrackets + ' bảng):</strong> ' + distributionText + ' <button class="ml-4 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 select-bracket" data-distribution="' + distribution.join(',') + '">Chọn</button></p>';
+            const description = descriptionArr.join(', ') + ` (${numGroups} bảng)`;
+
+            resultHtml += `
+                <div class="flex items-start min-w-0">
+                    <span class="font-semibold mr-1 whitespace-nowrap">Phương án ${index + 1} :</span>
+                    <span class="whitespace-normal break-words">${description}</span>
+                </div>
+                <div class="flex items-center justify-end">
+                    <button class="bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700 select-bracket" style="min-width:60px;" data-distribution="${distribution.join(',')}">Chọn</button>
+                </div>
+            `;
         });
+        resultHtml += '</div>';
     }
     try {
         resultDiv.innerHTML = resultHtml;
         const selectButtons = document.querySelectorAll('.select-bracket');
-        if (selectButtons.length > 0) {
-            console.log('Select buttons added:', selectButtons.length);
-            selectButtons.forEach(button => {
-                button.style.display = 'inline-block'; // Đảm bảo hiển thị
-                button.addEventListener('click', () => {
-                    const distribution = button.dataset.distribution.split(',').map(Number);
-                    const params = new URLSearchParams({
-                        distribution: distribution.join(','),
-                        numPlayers: players
-                    });
-                    console.log('Redirecting with params:', params.toString());
-                    window.location.href = 'athlete.html?' + params.toString();
+        selectButtons.forEach(button => {
+            button.style.display = 'inline-block';
+            button.addEventListener('click', () => {
+                const distribution = button.dataset.distribution.split(',').map(Number);
+                const params = new URLSearchParams({
+                    distribution: distribution.join(','),
+                    numPlayers: players
                 });
+                window.location.href = 'athlete.html?' + params.toString();
             });
-        } else {
-            console.warn('No select buttons found after rendering.');
-        }
+        });
     } catch (e) {
-        console.error('Lỗi khi gán innerHTML:', e);
         resultDiv.innerHTML = '<p class="text-red-500">Đã xảy ra lỗi khi hiển thị kết quả. Vui lòng thử lại.</p>';
     }
 }
+
+
+
+
 
 // Hàm chính suggestBrackets
 window.suggestBrackets = function() {

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chia bảng</title>
+    <link rel="stylesheet" href="output.css">
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <!-- Tăng max-w-2xl nếu muốn nhiều bảng hiển thị thoáng hơn -->
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-xl pb-20 relative">
+        <h2 class="text-xl font-bold text-center mb-4"></h2>
+        <div id="choiceSection" class="mt-4">
+            <button id="autoBracket" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 mt-2">Phân bảng tự động</button>
+            <button id="manualBracket" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700 mt-2">Nhập bảng thủ công</button>
+        </div>
+        <div id="manualFormSection" class="mt-4 hidden">
+            <h2 class="text-lg font-semibold">Nhập bảng thủ công</h2>
+            <div id="manualBracketForms"></div>
+            <div id="manualError" class="text-red-600 mt-2 font-semibold"></div>
+            <button id="confirmManual" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 mt-4">Xác nhận</button>
+        </div>
+        <div id="finalResult" class="mt-4 hidden"></div>
+        <!-- Tạo khoảng trống phía dưới để nút không bị che lấp -->
+        <div class="h-6"></div>
+        <button onclick="window.history.back()" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 mt-4 z-10 relative">Quay lại</button>
+    </div>
+    <script src="bracket.js"></script>
+</body>
+</html>

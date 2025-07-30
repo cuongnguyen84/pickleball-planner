@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pickleball Bracket Planner</title>
-    <link rel="stylesheet" href="output.css">  <!-- Liên kết CSS (sẽ cập nhật Tailwind sau) -->
+    <link rel="stylesheet" href="output.css">
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
@@ -18,8 +18,9 @@
             <input type="number" id="courts" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" />
         </div>
         <button id="generateButton" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Gợi ý chia bảng</button>
-        <div id="result" class="mt-4"></div>
+        <div id="result" class="mt-4 bg-yellow-100 p-2">
+        </div>
     </div>
-    <script src="script.js"></script>  <!-- Liên kết JS -->
+    <script src="script.js"></script>
 </body>
 </html>

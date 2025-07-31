@@ -13,5 +13,8 @@
   "devDependencies": {
     "tailwindcss": "^3.3.3"
   },
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "@g-loot/react-tournament-brackets": "^1.0.31-rc"
+  }
 }

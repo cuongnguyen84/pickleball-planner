@@ -1,5 +1,87 @@
-<div class="container mx-auto p-4">
-  <h2 class="text-2xl font-bold mb-4 text-center">Lịch thi đấu các sân</h2>
-  <div id="scheduleResult"></div>
-  <button onclick="window.history.back()" class="mt-6 w-full bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 rounded">Quay lại</button>
-</div>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch thi đấu các sân</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="output.css">
+    <style>
+.court-card {
+    min-width: 290px;
+    max-width: 440px;
+    width: 100%;
+    margin-bottom: 30px;
+}
+.court-match {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin-bottom: 13px;
+    font-size: 1.03rem;
+    line-height: 1.10;
+    gap: 0.5em;
+}
+.match-player {
+    display: flex;
+    align-items: center;
+    min-width: 140px;       /* QUAN TRỌNG: Đặt width cố định */
+    max-width: 185px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.98em;
+}
+.match-player.right {
+    justify-content: flex-start;
+    text-align: left;
+    margin-left: 10px;
+}
+.match-bracket {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.05em;
+    max-width: 2.05em;
+    text-align: center;
+    margin-right: 8px;
+    background: #e9effd;
+    color: #2468c3;
+    padding: 0.13em 0.15em 0.12em 0.16em;
+    border-radius: 1em;
+    font-weight: bold;
+    font-size: 1.08em;
+    letter-spacing: 0.03em;
+}
+.score-input {
+    width: 2.2em;
+    height: 2em;
+    border: 1.3px solid #b6c2d6;
+    border-radius: 8px;
+    margin: 0 7px;
+    font-size: 1.08em;
+    text-align: center;
+    background: #f7f8fa;
+    display: inline-block;
+    vertical-align: middle;
+}
+@media (max-width: 700px) {
+    .court-card { min-width: 97vw; max-width: 99vw; }
+    .match-player { min-width: 78px; max-width:120px; font-size: 0.89em;}
+    .score-input { font-size: 1em; }
+}
+
+
+</style>
+
+
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-xl mx-auto p-2 md:p-6">
+    <h2 class="text-2xl font-bold mb-6 text-center">Lịch thi đấu các sân</h2>
+    <div id="scheduleResult"></div>
+    <button onclick="window.history.back()" class="mt-8 w-full bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 rounded-lg">Quay lại</button>
+  </div>
+  <script src="schedule.js"></script>
+</body>
+</html>

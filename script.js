@@ -20,12 +20,10 @@ function validateInputs(playersInput, courtsInput) {
 // Hàm generate bracket suggestions
 function generateBracketOptions(players, bracketCounts) {
     const suggestions = [];
-    console.log('Generating options for players:', players, 'with bracketCounts:', bracketCounts);
     const maxBrackets = Math.min(Math.floor(players / 3), 8); // Tối đa 8 bảng
     for (let numBrackets = 1; numBrackets <= maxBrackets; numBrackets++) {
         const minPlayers = numBrackets * 3;
         const maxPlayers = numBrackets * 6;
-        console.log(`Checking numBrackets: ${numBrackets}, min: ${minPlayers}, max: ${maxPlayers}`);
         if (players >= minPlayers && players <= maxPlayers) {
             let basePlayers = Math.floor(players / numBrackets);
             let extraPlayers = players % numBrackets;
@@ -35,13 +33,11 @@ function generateBracketOptions(players, bracketCounts) {
                     distribution.push(basePlayers + (i < extraPlayers ? 1 : 0));
                 }
                 const maxDiff = Math.max(...distribution) - Math.min(...distribution);
-                console.log(`Distribution for ${numBrackets} brackets:`, distribution, 'maxDiff:', maxDiff);
                 if (maxDiff <= 1) {
                     suggestions.push({
                         numBrackets: numBrackets,
                         distribution: distribution
                     });
-                    console.log('Added suggestion:', { numBrackets, distribution });
                 }
             }
         }
@@ -49,7 +45,6 @@ function generateBracketOptions(players, bracketCounts) {
     return suggestions;
 }
 
-// Hàm display results with select buttons
 // Hàm display results with select buttons (BẢN ĐÃ SỬA)
 function displayResults(suggestions, players, courts, resultDiv) {
     let resultHtml = '<h2 class="text-lg font-semibold mt-4">Các phương án chia bảng:</h2>';
@@ -90,6 +85,10 @@ function displayResults(suggestions, players, courts, resultDiv) {
             button.style.display = 'inline-block';
             button.addEventListener('click', () => {
                 const distribution = button.dataset.distribution.split(',').map(Number);
+                // LƯU số người chơi và số sân vào localStorage ngay trước khi chuyển trang
+                localStorage.setItem('bracket_numPlayers', players);
+                localStorage.setItem('bracket_numCourts', courts);
+
                 const params = new URLSearchParams({
                     distribution: distribution.join(','),
                     numPlayers: players
@@ -101,10 +100,6 @@ function displayResults(suggestions, players, courts, resultDiv) {
         resultDiv.innerHTML = '<p class="text-red-500">Đã xảy ra lỗi khi hiển thị kết quả. Vui lòng thử lại.</p>';
     }
 }
-
-
-
-
 
 // Hàm chính suggestBrackets
 window.suggestBrackets = function() {
@@ -124,6 +119,10 @@ window.suggestBrackets = function() {
     }
 
     const { players, courts } = validation;
+    // Lưu số người chơi và số sân ngay khi hợp lệ
+    localStorage.setItem('bracket_numPlayers', players);
+    localStorage.setItem('bracket_numCourts', courts);
+
     let suggestions = [];
     if (players > 32) {
         suggestions = generateBracketOptions(players, [8]);

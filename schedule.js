@@ -3,43 +3,45 @@ const brackets = JSON.parse(localStorage.getItem('bracket_brackets') || '[]'); /
 const numCourts = parseInt(localStorage.getItem('bracket_numCourts'), 10);
 
 function generateAllMatchesAndAssignCourts(brackets, numCourts) {
-    // Tạo lịch vòng tròn từng bảng
-    const allMatches = [];
-    brackets.forEach((bracket, idx) => {
+    // Tạo tất cả trận, lưu sân "ưu tiên" theo bảng
+    let matchesWithCourt = [];
+    brackets.forEach((bracket, bIdx) => {
         const matches = generateRoundRobinMatches(bracket.players);
-        allMatches.push({
-            bracketIndex: idx,
-            bracketName: String.fromCharCode(65 + idx), // A, B, ...
-            matches: matches
-        });
-    });
-    // Gán sân cho từng trận
-    const courts = Array.from({ length: numCourts }, (_, i) => ({ court: i + 1, games: [] }));
-    let matchList = [];
-    // Nếu số bảng <= số sân: mỗi bảng 1 sân
-    if (brackets.length <= numCourts) {
-        allMatches.forEach((bm, idx) => {
-            courts[idx].games = bm.matches.map(match => ({
+        matches.forEach(match => {
+            matchesWithCourt.push({
                 ...match,
-                bracket: bm.bracketName
-            }));
-        });
-    } else {
-        // Số bảng > số sân: phân bổ đều các trận vào các sân
-        allMatches.forEach((bm, idx) => {
-            const courtIdx = idx < numCourts ? idx : idx % numCourts;
-            bm.matches.forEach(match => {
-                courts[courtIdx].games.push({
-                    ...match,
-                    bracket: bm.bracketName
-                });
+                bracket: String.fromCharCode(65 + bIdx),
+                preferCourt: bIdx % numCourts // bảng A->0, B->1, ...
             });
         });
-        // Sort lại để đều số trận/sân (tối ưu hóa tuỳ thích)
+    });
+
+    // Gán ban đầu: trận nào sân ưu tiên thì gán luôn, còn lại gán đều
+    let courts = Array.from({ length: numCourts }, (_, i) => ({ court: i + 1, games: [] }));
+    let remain = [];
+
+    // Gán trận ưu tiên vào sân của bảng
+    matchesWithCourt.forEach(match => {
+        if (courts[match.preferCourt].games.length < Math.ceil(matchesWithCourt.length / numCourts)) {
+            courts[match.preferCourt].games.push(match);
+        } else {
+            remain.push(match);
+        }
+    });
+
+    // Gán các trận còn lại vào sân có số trận ít nhất
+    remain.forEach(match => {
         courts.sort((a, b) => a.games.length - b.games.length);
-    }
+        courts[0].games.push(match);
+    });
+
+    // Sắp xếp lại để sân 1,2,3,4...
+    courts.sort((a, b) => a.court - b.court);
     return courts;
 }
+
+
+
 
 function generateRoundRobinMatches(players) {
     const matches = [];
@@ -54,24 +56,36 @@ function generateRoundRobinMatches(players) {
 // Hiển thị giao diện
 function displaySchedule() {
     const courts = generateAllMatchesAndAssignCourts(brackets, numCourts);
-    let html = '<div class="flex flex-wrap gap-4 justify-center">';
-    courts.forEach(court => {
-        html += `<div class="bg-gray-50 rounded-lg shadow p-4 min-w-[220px] max-w-[250px]">
-            <div class="text-lg font-bold text-blue-700 mb-2 text-center">Sân ${court.court}</div>`;
-        court.games.forEach((game, idx) => {
-            html += `<div class="mb-3">
-                <div class="font-semibold">${game.bracket}: ${game.p1.name} vs ${game.p2.name}</div>
-                <div class="flex items-center gap-2 mt-1 justify-center">
-                    <input type="number" min="0" class="w-12 border rounded p-1 text-center" id="score1_${court.court}_${idx}">
-                    <span class="mx-1">-</span>
-                    <input type="number" min="0" class="w-12 border rounded p-1 text-center" id="score2_${court.court}_${idx}">
+    let html = ``;
+    courts.forEach((court, idx) => {
+        html += `
+        <div class="court-card bg-white rounded-2xl shadow-md border border-slate-200 p-6">
+            <div style="font-size:1.3rem;font-weight:700;color:#205cb1;text-align:center;margin-bottom:1.3rem;letter-spacing:1px;">
+                Sân ${court.court}
+            </div>
+            ${court.games.length === 0
+                ? `<div style="color:#b2b2b2;padding:28px 0;font-size:17px;text-align:center;font-style:italic;">Không có trận nào</div>`
+                : court.games.map((game, idx2) => `
+                <div class="court-match">
+                    <span class="match-player">
+                        <span class="match-bracket">${game.bracket}</span>
+                        ${game.p1.name}
+                    </span>
+                    <input type="number" min="0" max="99" maxlength="2"
+                        class="score-input"
+                        id="score1_${court.court}_${idx2}" />
+                    <span style="min-width:12px;text-align:center;font-weight:bold;">-</span>
+                    <input type="number" min="0" max="99" maxlength="2"
+                        class="score-input"
+                        id="score2_${court.court}_${idx2}" />
+                    <span class="match-player right">${game.p2.name}</span>
                 </div>
-            </div>`;
-        });
-        html += `</div>`;
+                `).join('')}
+        </div>
+        `;
     });
-    html += '</div>';
     document.getElementById('scheduleResult').innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', displaySchedule);
+

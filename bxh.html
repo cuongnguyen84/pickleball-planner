@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Bảng xếp hạng</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="output.css">
+  <style>
+    .bxh-table { width: 100%; border-collapse: collapse; margin: 0 auto;}
+    .bxh-table th, .bxh-table td { border: 1px solid #ddd; padding: 0.5rem; text-align: center; font-size: 1rem;}
+    .bxh-table th { background: #205cb1; color: white;}
+    .bxh-table tr:nth-child(even) { background: #f4f8fc; }
+    .bxh-header { font-size: 2rem; font-weight: bold; color: #205cb1; margin-bottom: 1.5rem; text-align: center; }
+    .bracket-title { margin-top: 1.8rem; margin-bottom: 0.4rem; font-weight: 700; color: #205cb1; font-size: 1.2rem;}
+  </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-2xl mx-auto p-4">
+    <div class="bxh-header">Bảng xếp hạng</div>
+    <div id="bxhResult"></div>
+    <button onclick="window.history.back()" class="mt-10 w-full bg-gray-500 hover:bg-gray-700 text-white font-bold py-3 rounded-lg">Quay lại</button>
+  </div>
+  <script src="bxh.js"></script>
+</body>
+</html>

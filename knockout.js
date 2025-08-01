@@ -375,6 +375,101 @@ if (brackets.length === 6 && numTeams === 16) {
 
   return koPlayers;
 }
+    // Trường hợp 7 bảng lấy 8 đội
+if (brackets.length === 7 && numTeams === 8) {
+  let nhats = [0,1,2,3,4,5,6].map(i => ({
+    ...bxhs[i][0], bracket: alphabet[i], pos: 'Nhất', bx: i
+  }));
+  let allNhi = [0,1,2,3,4,5,6].map(i => ({
+    ...bxhs[i][1], bracket: alphabet[i], pos: 'Nhì', bx: i
+  }));
+  // Chọn 1 nhì xuất sắc nhất
+  allNhi.sort((a,b) => b.point - a.point || (b.scoreFor - b.scoreAgainst) - (a.scoreFor - a.scoreAgainst) || b.scoreFor - a.scoreFor);
+  let bestNhi = allNhi[0];
+
+  let koPlayers = [...nhats, bestNhi];
+
+  // Random hóa các cặp sao cho 2 đội cùng bảng rơi 2 nhánh khác nhau
+  // Đánh số hạt giống theo điểm vòng bảng
+  koPlayers.sort((a,b) => b.point - a.point || (b.scoreFor - b.scoreAgainst) - (a.scoreFor - a.scoreAgainst) || b.scoreFor - a.scoreFor);
+  // Tạo mảng cặp
+  let pairs = [];
+  let used = new Set();
+
+  // Ghép Nhất bảng với Nhì xuất sắc không cùng bảng nếu có
+  let nhi = bestNhi;
+  for (let i = 0; i < nhats.length; i++) {
+    if (nhats[i].bx !== nhi.bx) {
+      pairs.push([nhats[i], nhi]);
+      used.add(nhats[i].name);
+      used.add(nhi.name);
+      break;
+    }
+  }
+  // Các nhất còn lại chưa dùng ghép thành cặp (random, ưu tiên khác bảng)
+  let remain = nhats.filter(x => !used.has(x.name));
+  while (remain.length) {
+    let p1 = remain.shift();
+    let idx = remain.findIndex(x => x.bx !== p1.bx);
+    let p2;
+    if (idx === -1) {
+      p2 = remain.shift();
+    } else {
+      p2 = remain.splice(idx,1)[0];
+    }
+    pairs.push([p1,p2]);
+  }
+  return pairs.flat();
+}
+
+// Trường hợp 7 bảng lấy 16 đội
+if (brackets.length === 7 && numTeams === 16) {
+  // Lấy danh sách nhất, nhì, ba các bảng
+  let nhats = [];
+  let nhis = [];
+  let bas = [];
+  for (let i = 0; i < 7; i++) {
+    nhats.push({ ...bxhs[i][0], bracket: alphabet[i], pos: 'Nhất', bx: i });
+    nhis.push({ ...bxhs[i][1], bracket: alphabet[i], pos: 'Nhì', bx: i });
+    bas.push({ ...bxhs[i][2], bracket: alphabet[i], pos: 'Ba', bx: i });
+  }
+
+  // Chọn 2 đội hạng 3 xuất sắc nhất
+  bas.sort((a, b) => 
+    b.point - a.point || 
+    (b.scoreFor - b.scoreAgainst) - (a.scoreFor - a.scoreAgainst) || 
+    b.scoreFor - a.scoreFor
+  );
+  let bestBa = bas.slice(0, 2);
+
+  // Gộp toàn bộ 16 đội
+  let koPlayers = [...nhats, ...nhis, ...bestBa];
+
+  // Gán seed theo thứ tự ưu tiên
+  // Seed 1-7: nhats (theo điểm và hiệu số vòng bảng)
+  nhats.sort((a, b) =>
+    b.point - a.point ||
+    (b.scoreFor - b.scoreAgainst) - (a.scoreFor - a.scoreAgainst) ||
+    b.scoreFor - a.scoreFor
+  );
+  // Seed 8-14: nhis (cũng sort điểm hiệu số)
+  nhis.sort((a, b) =>
+    b.point - a.point ||
+    (b.scoreFor - b.scoreAgainst) - (a.scoreFor - a.scoreAgainst) ||
+    b.scoreFor - a.scoreFor
+  );
+  // Seed 15-16: bestBa (đã sort bên trên)
+
+  // Xếp seed cho từng nhóm
+  nhats.forEach((p, i) => p.seed = i + 1);
+  nhis.forEach((p, i) => p.seed = i + 8);
+  bestBa.forEach((p, i) => p.seed = i + 15);
+
+  return koPlayers;
+}
+
+
+
 
 
 
@@ -531,29 +626,97 @@ else if (brackets.length === 6 && numTeams === 16) {
   return matches; // <- đúng chuẩn, mảng 8 trận, mỗi trận {p1, p2, desc}
 }
 
+if (brackets.length === 7 && numTeams === 16) {
+  // Lấy từng nhóm
+  let nhats = koPlayers.filter(x => x.pos === 'Nhất');
+  let nhis = koPlayers.filter(x => x.pos === 'Nhì');
+  let bas = koPlayers.filter(x => x.pos === 'Ba');
 
-  // 8 bảng
-  else if (brackets.length===8 && numTeams===8) {
-    let arr = koPlayers;
-    matches = [
-      {p1: arr[0], p2: arr[4], desc: `Nhất A - Nhất E`},
-      {p1: arr[1], p2: arr[5], desc: `Nhất B - Nhất F`},
-      {p1: arr[2], p2: arr[6], desc: `Nhất C - Nhất G`},
-      {p1: arr[3], p2: arr[7], desc: `Nhất D - Nhất H`},
-    ];
+  // Chọn 2 ba xuất sắc nhất
+  let bestBa = [...bas].sort((a,b) =>
+    b.point - a.point || (b.scoreFor - b.scoreAgainst) - (a.scoreFor - a.scoreAgainst) || b.scoreFor - a.scoreFor
+  ).slice(0, 2);
+
+  let used = new Set();
+  let matches = [];
+
+  // Bước 1: Random 1 trong 7 nhất bảng gặp 1 trong 2 ba xuất sắc nhất, KHÔNG cùng bảng
+  let shuffledNhats = shuffle(nhats);
+  let shuffledBas = shuffle(bestBa);
+
+  for (let ba of shuffledBas) {
+    let n1Idx = shuffledNhats.findIndex(n => n.bracket !== ba.bracket && !used.has(n.name));
+    if (n1Idx !== -1) {
+      let n1 = shuffledNhats[n1Idx];
+      matches.push({ p1: n1, p2: ba, desc: `${n1.pos} ${n1.bracket} - ${ba.pos} ${ba.bracket}` });
+      used.add(n1.name);
+      used.add(ba.name);
+      shuffledNhats.splice(n1Idx, 1);
+    }
   }
-  else if (brackets.length===8 && numTeams===16) {
-    let arr = koPlayers;
-    for (let i=0;i<8;++i) matches.push({p1: arr[i], p2: arr[15-i], desc:""});
+
+  // Bước 2: Các nhất bảng còn lại gặp nhì bảng KHÁC bảng (không cùng bảng)
+  let remainNhats = shuffledNhats.filter(n => !used.has(n.name));
+  let remainNhis = nhis.filter(n => !used.has(n.name));
+
+  for (let n1 of remainNhats) {
+    let nhiIdx = remainNhis.findIndex(n => n.bracket !== n1.bracket && !used.has(n.name));
+    if (nhiIdx !== -1) {
+      let n2 = remainNhis[nhiIdx];
+      matches.push({ p1: n1, p2: n2, desc: `${n1.pos} ${n1.bracket} - ${n2.pos} ${n2.bracket}` });
+      used.add(n1.name);
+      used.add(n2.name);
+      remainNhis.splice(nhiIdx, 1);
+    }
   }
-  else {
-    // fallback: ghép 1 vs n, 2 vs n-1, ... (phòng ngừa)
-    let arr = [...koPlayers];
-    for (let i=0;i<arr.length/2;++i)
-      matches.push({p1:arr[i], p2:arr[arr.length-1-i], desc:""});
+
+  // Bước 3: 2 đội nhì bảng còn lại gặp nhau (ưu tiên KHÁC bảng)
+  if (remainNhis.length === 2) {
+    let [p1, p2] = remainNhis;
+    // Cố gắng tránh cùng bảng, nếu không được thì vẫn cho ghép
+    if (p1.bracket === p2.bracket) {
+      matches.push({ p1, p2, desc: `${p1.pos} ${p1.bracket} - ${p2.pos} ${p2.bracket}` });
+    } else {
+      matches.push({ p1, p2, desc: `${p1.pos} ${p1.bracket} - ${p2.pos} ${p2.bracket}` });
+    }
+    used.add(p1.name);
+    used.add(p2.name);
   }
+
+  // Trả về mảng đội theo thứ tự để genKOMatches dùng
   return matches;
 }
+
+
+  // 8 bảng
+  if (brackets.length === 8 && numTeams === 16) {
+    // Lọc nhóm nhất bảng và nhì bảng theo bảng
+    let nhats = koPlayers.filter(p => p.pos === 'Nhất').sort((a,b) => a.bracket.localeCompare(b.bracket));
+    let nhis = koPlayers.filter(p => p.pos === 'Nhì').sort((a,b) => a.bracket.localeCompare(b.bracket));
+
+    // Nhánh trên: Nhất A vs Nhì B, Nhất C vs Nhì D, Nhất E vs Nhì F, Nhất G vs Nhì H
+    matches.push({p1: nhats.find(p => p.bracket === 'A'), p2: nhis.find(p => p.bracket === 'B'), desc: 'Nhất A - Nhì B'});
+    matches.push({p1: nhats.find(p => p.bracket === 'C'), p2: nhis.find(p => p.bracket === 'D'), desc: 'Nhất C - Nhì D'});
+    matches.push({p1: nhats.find(p => p.bracket === 'E'), p2: nhis.find(p => p.bracket === 'F'), desc: 'Nhất E - Nhì F'});
+    matches.push({p1: nhats.find(p => p.bracket === 'G'), p2: nhis.find(p => p.bracket === 'H'), desc: 'Nhất G - Nhì H'});
+
+    // Nhánh dưới: Nhất B vs Nhì A, Nhất D vs Nhì C, Nhất F vs Nhì E, Nhất H vs Nhì G
+    matches.push({p1: nhats.find(p => p.bracket === 'B'), p2: nhis.find(p => p.bracket === 'A'), desc: 'Nhất B - Nhì A'});
+    matches.push({p1: nhats.find(p => p.bracket === 'D'), p2: nhis.find(p => p.bracket === 'C'), desc: 'Nhất D - Nhì C'});
+    matches.push({p1: nhats.find(p => p.bracket === 'F'), p2: nhis.find(p => p.bracket === 'E'), desc: 'Nhất F - Nhì E'});
+    matches.push({p1: nhats.find(p => p.bracket === 'H'), p2: nhis.find(p => p.bracket === 'G'), desc: 'Nhất H - Nhì G'});
+  }
+  else {
+    // Fallback cho các trường hợp khác như cũ
+    let arr = [...koPlayers];
+    for (let i = 0; i < arr.length / 2; ++i) {
+      matches.push({p1: arr[i], p2: arr[arr.length - 1 - i], desc: ""});
+    }
+  }
+
+  return matches;
+}
+
 
 function shuffle(arr) {
   let a = [...arr];

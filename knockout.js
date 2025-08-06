@@ -732,35 +732,21 @@ function renderBracket(numTeams) {
   console.log("==> KO Matches:", koPlayers);            // kiểm tra
 
   let qf = genKOMatches(numTeams, koPlayers);
-  /*
-   * Đôi khi logic chọn người vào Knockout trả về nhiều trận hơn cần thiết (ví dụ:
-   * người dùng chọn 4 đội nhưng koPlayers có 8 đội do BXH phức tạp). Để hiển thị
-   * đúng số cặp vòng đầu, chúng ta căn cứ vào số VĐV thực tế thay vì tham số
-   * numTeams. Số trận vòng đầu luôn bằng một nửa số VĐV tham dự vòng Knockout.
-   */
-  const totalPlayers = koPlayers.length;
-  let expectedMatches = Math.max(1, Math.floor(totalPlayers / 2));
-  if (Array.isArray(qf) && qf.length > expectedMatches) {
-    qf = qf.slice(0, expectedMatches);
-  }
+  // Số đội tham dự ở vòng đầu bằng 2 lần số trận genKOMatches trả về
+  const totalPlayers = qf.length * 2;
   console.log("Kết quả KO matches:", qf);
 
-  // Xác định số vòng dựa trên số VĐV thực tế. Ví dụ: 4 VĐV -> 2 vòng, 8 VĐV -> 3 vòng.
+  // Xác định số vòng (log2) dựa trên số đội thực tế. Ví dụ 4 đội -> 2 vòng (bán kết + chung kết)
   let rounds = [];
   let current = qf;
-  // totalRounds = log2(số đội), làm tròn lên để xử lý trường hợp không phải lũy thừa 2
   let totalRounds = Math.ceil(Math.log2(Math.max(1, totalPlayers)));
 
-  // Label cho từng vòng.  Sử dụng nhãn ngắn gọn và tùy theo tổng số vòng.
-  let roundLabels;
-  if (expectedMatches >= 8) {
-    roundLabels = ["Vòng 1/16", "Vòng 1/8", "Tứ kết", "Bán kết", "Chung kết"];
-  } else if (expectedMatches === 4) {
-    roundLabels = ["Tứ kết", "Bán kết", "Chung kết"];
-  } else if (expectedMatches === 2) {
-    roundLabels = ["Bán kết", "Chung kết"];
-  } else {
-    roundLabels = ["Chung kết"];
+  // Label cho từng vòng theo thứ tự từ vòng đầu tới trận chung kết.  Số vòng = totalRounds.
+  const labelLevels = ["Chung kết", "Bán kết", "Tứ kết", "Vòng 1/8", "Vòng 1/16", "Vòng 1/32"];  // mở rộng nếu cần
+  let roundLabels = [];
+  for (let r = 0; r < totalRounds; ++r) {
+    const idxFromEnd = totalRounds - 1 - r;
+    roundLabels.push(labelLevels[Math.min(idxFromEnd, labelLevels.length - 1)]);
   }
 
   // Sinh toàn bộ bracket các vòng
@@ -771,8 +757,8 @@ function renderBracket(numTeams) {
     for (let i = 0; i < prev.length; i += 2) {
       let matchId1 = `R${r-1}_${i}`;
       let matchId2 = `R${r-1}_${i+1}`;
-      let w1 = getWinner(prev[i].p1, prev[i].p2, matchId1) || {name: `Thắng ${roundLabels[Math.max(0, (totalRounds - r) - 1)]} ${i+1}`};
-      let w2 = getWinner(prev[i+1].p1, prev[i+1].p2, matchId2) || {name: `Thắng ${roundLabels[Math.max(0, (totalRounds - r) - 1)]} ${i+2}`};
+      let w1 = getWinner(prev[i].p1, prev[i].p2, matchId1) || {name: `Thắng ${roundLabels[r-1]} ${i+1}`};
+      let w2 = getWinner(prev[i+1].p1, prev[i+1].p2, matchId2) || {name: `Thắng ${roundLabels[r-1]} ${i+2}`};
       next.push({p1: w1, p2: w2});
     }
     rounds.push(next);
@@ -790,11 +776,12 @@ function renderBracket(numTeams) {
   const roundsToRender = rounds.slice(0, roundCount);
   // Total rows for positioning: 2^roundCount
   const totalRows = Math.pow(2, roundCount);
-  // Kích thước dynamic: thu nhỏ cho ít vòng để tránh ô quá cao
+  // Kích thước dynamic: thu nhỏ cho ít đội để tránh ô quá cao
   let baseHeight;
   if (totalPlayers <= 4) baseHeight = 60;
   else if (totalPlayers <= 8) baseHeight = 65;
-  else baseHeight = 70;
+  else if (totalPlayers <= 16) baseHeight = 70;
+  else baseHeight = 75;
   const columnWidth = 220; // width of each round column
   const colGap = 40; // gap between columns
   // Build header labels aligned with column widths

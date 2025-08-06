@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import ReactDOM from "react-dom";
+// Starting with React 18, the old ReactDOM.render API is deprecated.
+// Use createRoot from the client entry to mount the app.  The
+// createRoot API exists in React 18+ and is required when using
+// react-dom@19.  See: https://react.dev/reference/react-dom/client/createRoot
+import { createRoot } from "react-dom/client";
 // Import the single elimination bracket component from the library.  The
 // project already includes @g-loot/react-tournament-brackets as a dependency.
 import { SingleEliminationBracket, createTheme } from "@g-loot/react-tournament-brackets";
@@ -453,8 +457,19 @@ function KnockoutBracket() {
 // Mount the React component to the page.  The container element
 // `koBracketReact` should be present in knockout.html.
 document.addEventListener('DOMContentLoaded', () => {
-  const root = document.getElementById('koBracketReact');
-  if (root) {
-    ReactDOM.render(<KnockoutBracket />, root);
+  const mountEl = document.getElementById('koBracketReact');
+  if (mountEl) {
+    // Create a root and render the bracket component.  Using createRoot
+    // prevents warnings with newer versions of React.  Wrap in a try/catch
+    // so that if rendering fails (e.g. due to unexpected errors) we
+    // display the error in the container.  This aids debugging when
+    // running the file via file:// scheme where console output may
+    // not be visible.
+    try {
+      createRoot(mountEl).render(<KnockoutBracket />);
+    } catch (err) {
+      mountEl.innerText = 'Bracket render error: ' + (err && err.message ? err.message : err);
+      console.error(err);
+    }
   }
 });

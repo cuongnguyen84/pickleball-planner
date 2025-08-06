@@ -325,8 +325,13 @@ function getWinner(p1, p2, result) {
 
 // Build matches array in the format expected by SingleEliminationBracket.
 function buildBracketMatches(brackets, scheduleScores, koScores, numTeams) {
-  // First round matches
+  // First round matches.  If genKOMatches returns nothing or an empty value,
+  // bail early with an empty array.  The bracket component expects an array
+  // of matches; undefined would cause errors.
   const round0 = genKOMatches(brackets, scheduleScores, numTeams);
+  if (!Array.isArray(round0) || round0.length === 0) {
+    return [];
+  }
   // Determine total rounds (log2) based on number of participants
   const totalRounds = Math.ceil(Math.log2(round0.length * 2));
   // roundLabels similar to renderBracket for display

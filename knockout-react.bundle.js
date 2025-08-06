@@ -27109,6 +27109,9 @@ To continue using the deprecated object syntax, you'll need to wrap your compone
       }
       function buildBracketMatches(brackets, scheduleScores, koScores, numTeams) {
         const round0 = genKOMatches(brackets, scheduleScores, numTeams);
+        if (!Array.isArray(round0) || round0.length === 0) {
+          return [];
+        }
         const totalRounds = Math.ceil(Math.log2(round0.length * 2));
         const roundLabelsMap = {
           4: ["V\xF2ng 1/8", "T\u1EE9 k\u1EBFt", "B\xE1n k\u1EBFt", "Chung k\u1EBFt"],

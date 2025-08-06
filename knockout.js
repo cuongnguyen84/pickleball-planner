@@ -793,18 +793,8 @@ function renderBracket(numTeams) {
   else baseHeight = 70;                           // 5 vòng trở lên
   const columnWidth = 220; // width of each round column
   const colGap = 40; // gap between columns
-  // Build header labels aligned with column widths
-  let headerHtml = '<div class="bracket-header flex mb-2">';
-  // Compute dynamic labels based on number of rounds: final, semi‑final, quarter‑final, etc.
-  const labelsByLevel = ['Chung kết','Bán kết','Tứ kết','Vòng 1/8','Vòng 1/16','Vòng 1/32'];
-  for (let r = 0; r < roundCount; ++r) {
-    // Determine label: last round (highest index) gets first entry (Chung kết)
-    const idxFromEnd = roundCount - 1 - r;
-    const label = labelsByLevel[Math.min(idxFromEnd, labelsByLevel.length - 1)];
-    headerHtml += `<div style="width:${columnWidth}px;text-align:center;font-weight:bold;">${label}</div>`;
-    if (r < roundCount - 1) headerHtml += `<div style="width:${colGap}px;"></div>`;
-  }
-  headerHtml += '</div>';
+  // Ẩn dòng tiêu đề vòng (Vòng 1/8, Tứ kết, Bán kết, Chung kết) để giao diện gọn hơn
+  let headerHtml = '';
   // Container for absolute-positioned match cards
   let containerHtml = `<div style="position:relative;height:${totalRows * baseHeight}px;">`;
   for (let r = 0; r < roundCount; ++r) {

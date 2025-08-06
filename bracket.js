@@ -113,47 +113,30 @@ function displayFinalBrackets(brackets) {
     const finalResult = document.getElementById('finalResult');
     let html = `<h2 class="text-2xl font-bold mb-4 text-center">Kết quả phân bảng</h2>`;
 
-    const total = brackets.length;
-    let row1 = 0, row2 = 0;
-    if (total <= 4) {
-        row1 = total; row2 = 0;
-    } else {
-        row1 = Math.floor(total / 2);
-        row2 = total - row1;
-        if (total % 2 === 1) {
-            row1 = Math.floor(total / 2);
-            row2 = total - row1;
-        }
-    }
-    // Container 2 hàng
-    html += `<div class="w-full max-w-lg mx-auto flex flex-col items-center gap-4">`;
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const bgColors = [
         "#e0edff", "#e8f6e8", "#fff9db", "#ffe6ef",
         "#edeaff", "#e0f6e6", "#ffedd6", "#ffe2e0"
     ];
 
-    // === DÒNG 1 ===
-    html += `<div class="grid gap-4 w-full justify-center"
-        style="grid-template-columns: repeat(${row1}, max-content); justify-content:center;">`;
-
-    for (let i = 0; i < row1; i++) {
-        const bracket = brackets[i];
-        const color = bgColors[i % bgColors.length];
+    // Sử dụng grid responsive: auto-fit theo kích thước thẻ (card)
+    html += `<div class="grid gap-4 w-full" style="grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); justify-items: center;">`;
+    brackets.forEach((bracket, idx) => {
+        const color = bgColors[idx % bgColors.length];
         html += `
         <div style="
             background: ${color};
             border-radius: 1rem;
             box-shadow: 0 2px 8px rgba(0,0,0,0.03);
             border: 1.5px solid #cbd5e1;
-            width: 9.5rem; min-width: 8.5rem; max-width: 10rem;
-            margin: 0 auto 0.5rem auto; display: flex; flex-direction: column;">
+            width: 100%; max-width: 10rem; min-width: 8.5rem;
+            display: flex; flex-direction: column;">
             <div style="
                 font-weight: bold; font-size: 1rem; text-align: center;
                 color: #374151; background: #f4f4f6cc; padding: 0.65rem 0 0.6rem 0;
                 border-bottom: 1px solid #e5e7eb;
                 border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
-                Bảng ${alphabet[i] || (i+1)}
+                Bảng ${alphabet[idx] || (idx+1)}
             </div>
             <table style="width: 100%;">
                 <tbody>
@@ -177,56 +160,7 @@ function displayFinalBrackets(brackets) {
             `;
         });
         html += `</tbody></table></div>`;
-    }
-    html += `</div>`;
-
-    // === DÒNG 2 (nếu có) ===
-    if (row2 > 0) {
-        html += `<div class="grid gap-4 w-full justify-center mt-2"
-            style="grid-template-columns: repeat(${row2}, max-content); justify-content:center;">`;
-        for (let i = row1; i < row1 + row2; i++) {
-            const bracket = brackets[i];
-            const color = bgColors[i % bgColors.length];
-            html += `
-            <div style="
-                background: ${color};
-                border-radius: 1rem;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-                border: 1.5px solid #cbd5e1;
-                width: 9.5rem; min-width: 8.5rem; max-width: 10rem;
-                margin: 0 auto 0.5rem auto; display: flex; flex-direction: column;">
-                <div style="
-                    font-weight: bold; font-size: 1rem; text-align: center;
-                    color: #374151; background: #f4f4f6cc; padding: 0.65rem 0 0.6rem 0;
-                    border-bottom: 1px solid #e5e7eb;
-                    border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
-                    Bảng ${alphabet[i] || (i+1)}
-                </div>
-                <table style="width: 100%;">
-                    <tbody>
-            `;
-            bracket.players.forEach((player, rowIdx) => {
-                let displayName = player.name;
-                if (player.seed > 0 && player.team) {
-                    displayName += ` (${player.seed}) (${player.team})`;
-                } else if (player.seed > 0) {
-                    displayName += ` (${player.seed})`;
-                } else if (player.team) {
-                    displayName += ` (${player.team})`;
-                }
-                html += `
-                    <tr>
-                        <td style="
-                            border-bottom: ${rowIdx === bracket.players.length - 1 ? 'none' : '1px solid #e5e7eb'};
-                            padding: 0.6rem 0.1rem; text-align: center; font-size: 1rem; background: transparent;
-                        ">${displayName}</td>
-                    </tr>
-                `;
-            });
-            html += `</tbody></table></div>`;
-        }
-        html += `</div>`;
-    }
+    });
     html += `</div>`;
 
     // === NÚT CHUYỂN SANG LỊCH THI ĐẤU ===

@@ -815,7 +815,9 @@ function renderBracket(numTeams) {
       const p1Winner = !!(winner && m.p1 && winner.name === m.p1.name);
       const p2Winner = !!(winner && m.p2 && winner.name === m.p2.name);
       // Build match card
-      let card = `<div class="match-card" style="position:absolute;top:${topPx}px;left:${leftPx}px;width:${columnWidth}px;min-height:${baseHeight * rowSpan}px;">`;
+      // Để các ô vòng sau (BK, CK) không quá cao, giới hạn chiều cao tối đa bằng 2 lần baseHeight.
+      const effectiveSpan = Math.min(rowSpan, 2);
+      let card = `<div class="match-card" style="position:absolute;top:${topPx}px;left:${leftPx}px;width:${columnWidth}px;min-height:${baseHeight * effectiveSpan}px;">`;
       // Seed/round indicator
       card += `<div class="match-seed">${r === roundCount - 1 ? 'CK' : r === roundCount - 2 ? 'BK' + (i + 1) : (i + 1)}</div>`;
       // Player 1 line

@@ -805,14 +805,19 @@ function renderBracket(numTeams) {
       const result = getKoResult(matchId);
       const rowSpan = 1 << r;
       const rowStart = (1 << r) + i * (1 << (r + 1));
-      const topPx = (rowStart - 1) * baseHeight;
+      // Tính vị trí top. Để tất cả các ô trận có chiều cao bằng nhau, chúng ta
+      // không nhân chiều cao với rowSpan; thay vào đó, card được đặt giữa
+      // vùng chiếm của nó. Card sẽ cao baseHeight và được căn giữa trong
+      // khoảng rowSpan*baseHeight.
+      const cardHeight = baseHeight;
+      const cardTop = ((rowStart - 1) + ((rowSpan - 1) / 2)) * baseHeight;
       const leftPx = r * (columnWidth + colGap);
       // Determine winner to highlight
       const winner = getWinner(m.p1, m.p2, matchId);
       const p1Winner = !!(winner && m.p1 && winner.name === m.p1.name);
       const p2Winner = !!(winner && m.p2 && winner.name === m.p2.name);
       // Build match card
-      let card = `<div class="match-card" style="position:absolute;top:${topPx}px;left:${leftPx}px;width:${columnWidth}px;min-height:${baseHeight * rowSpan}px;">`;
+      let card = `<div class="match-card" style="position:absolute;top:${cardTop}px;left:${leftPx}px;width:${columnWidth}px;height:${cardHeight}px;">`;
       // Seed/round indicator
       card += `<div class="match-seed">${r === roundCount - 1 ? 'CK' : r === roundCount - 2 ? 'BK' + (i + 1) : (i + 1)}</div>`;
       // Player 1 line

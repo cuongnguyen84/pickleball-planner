@@ -119,16 +119,20 @@ function displayFinalBrackets(brackets) {
         "#edeaff", "#e0f6e6", "#ffedd6", "#ffe2e0"
     ];
     const total = brackets.length;
-    // Nếu có nhiều hơn 4 bảng, chia thành 2 hàng: row1 hàng trên chiếm nửa (lấy trần), row2 còn lại
-    let row1 = total <= 4 ? total : Math.ceil(total / 2);
-    let row2 = total - row1;
 
-    html += `<div class="flex flex-col items-center w-full gap-2">`;
-    // Hàng 1
-    html += `<div class="grid gap-4 w-full" style="grid-template-columns: repeat(${row1}, max-content); justify-content:center;">`;
-    for (let i = 0; i < row1; i++) {
+    /*
+      Sử dụng grid responsive để tự động phân bố các bảng thành nhiều hàng.
+      - Trên màn hình nhỏ: 1 cột
+      - Trên màn hình vừa (sm): 2 cột
+      - Trên màn hình trung bình (md): 3 cột
+      - Trên màn hình lớn (lg): 4 cột
+      Điều này đảm bảo rằng với 7 bảng, hàng trên sẽ có tối đa 4 bảng và hàng dưới sẽ có phần còn lại.
+    */
+    html += `<div class="grid w-full gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-items-center">`;
+    for (let i = 0; i < total; i++) {
         const bracket = brackets[i];
         const color = bgColors[i % bgColors.length];
+        // Render một bảng
         html += `
         <div style="
             background: ${color};
@@ -166,53 +170,6 @@ function displayFinalBrackets(brackets) {
             `;
         });
         html += `</tbody></table></div>`;
-    }
-    html += `</div>`;
-    // Hàng 2 nếu có
-    if (row2 > 0) {
-        html += `<div class="grid gap-4 w-full" style="grid-template-columns: repeat(${row2}, max-content); justify-content:center;">`;
-        for (let i = row1; i < total; i++) {
-            const bracket = brackets[i];
-            const color = bgColors[i % bgColors.length];
-            html += `
-            <div style="
-                background: ${color};
-                border-radius: 1rem;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-                border: 1.5px solid #cbd5e1;
-                width: 9.5rem; min-width: 8.5rem; max-width: 10rem;
-                margin: 0 auto; display: flex; flex-direction: column;">
-                <div style="
-                    font-weight: bold; font-size: 1rem; text-align: center;
-                    color: #374151; background: #f4f4f6cc; padding: 0.65rem 0 0.6rem 0;
-                    border-bottom: 1px solid #e5e7eb;
-                    border-top-left-radius: 1rem; border-top-right-radius: 1rem;">
-                    Bảng ${alphabet[i] || (i+1)}
-                </div>
-                <table style="width: 100%;">
-                    <tbody>
-            `;
-            bracket.players.forEach((player, rowIdx) => {
-                let displayName = player.name;
-                if (player.seed > 0 && player.team) {
-                    displayName += ` (${player.seed}) (${player.team})`;
-                } else if (player.seed > 0) {
-                    displayName += ` (${player.seed})`;
-                } else if (player.team) {
-                    displayName += ` (${player.team})`;
-                }
-                html += `
-                    <tr>
-                        <td style="
-                            border-bottom: ${rowIdx === bracket.players.length - 1 ? 'none' : '1px solid #e5e7eb'};
-                            padding: 0.6rem 0.1rem; text-align: center; font-size: 1rem; background: transparent;
-                        ">${displayName}</td>
-                    </tr>
-                `;
-            });
-            html += `</tbody></table></div>`;
-        }
-        html += `</div>`;
     }
     html += `</div>`;
 

@@ -732,11 +732,18 @@ function renderBracket(numTeams) {
   console.log("==> KO Matches:", koPlayers);            // kiểm tra
 
   let qf = genKOMatches(numTeams, koPlayers);
-  // Số đội tham dự ở vòng đầu bằng 2 lần số trận genKOMatches trả về
-  const totalPlayers = qf.length * 2;
+  // Số trận mong đợi hiển thị ở vòng đầu dựa theo lựa chọn numTeams. Ví dụ: 4 đội -> 2 trận, 8 đội -> 4 trận.
+  const expectedMatches = Math.max(1, Math.floor(numTeams / 2));
+  // Nếu genKOMatches trả về nhiều trận hơn, chỉ hiển thị đủ expectedMatches trận đầu tiên
+  if (qf.length > expectedMatches) {
+    qf = qf.slice(0, expectedMatches);
+  }
   console.log("Kết quả KO matches:", qf);
 
-  // Xác định số vòng (log2) dựa trên số đội thực tế. Ví dụ 4 đội -> 2 vòng (bán kết + chung kết)
+  // Số đội hiển thị ở vòng đầu bằng expectedMatches*2 (không dựa trên dữ liệu trả về)
+  const totalPlayers = expectedMatches * 2;
+
+  // Xác định số vòng (log2) dựa trên numTeams. 4 đội -> 2 vòng (bán kết + chung kết), 8 -> 3 vòng,...
   let rounds = [];
   let current = qf;
   let totalRounds = Math.ceil(Math.log2(Math.max(1, totalPlayers)));

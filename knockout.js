@@ -788,9 +788,9 @@ function renderBracket(numTeams) {
   // Với số đội nhỏ, sử dụng chiều cao nhỏ hơn để các trận Bán kết/Chung kết không chiếm quá nhiều không gian.
   let baseHeight;
   if (totalPlayers <= 4) baseHeight = 60;         // 2 vòng: BK và CK
-  else if (totalPlayers <= 8) baseHeight = 50;    // 3 vòng: Tứ kết, Bán kết, Chung kết
-  else if (totalPlayers <= 16) baseHeight = 60;   // 4 vòng
-  else baseHeight = 70;                           // 5 vòng trở lên
+  else if (totalPlayers <= 8) baseHeight = 45;    // 3 vòng: Vòng 1/8, Tứ kết/Bán kết, Chung kết
+  else if (totalPlayers <= 16) baseHeight = 55;   // 4 vòng
+  else baseHeight = 60;                           // 5 vòng trở lên
   const columnWidth = 220; // width of each round column
   const colGap = 40; // gap between columns
   // Ẩn dòng tiêu đề vòng (Vòng 1/8, Tứ kết, Bán kết, Chung kết) để giao diện gọn hơn

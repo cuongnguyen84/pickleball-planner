@@ -784,11 +784,13 @@ function renderBracket(numTeams) {
   // Total rows for positioning: 2^roundCount
   const totalRows = Math.pow(2, roundCount);
   // Kích thước dynamic: thu nhỏ cho ít đội để tránh ô quá cao
+  // Điều chỉnh chiều cao cơ bản của ô trận để tránh thẻ quá cao ở các vòng cuối.
+  // Với số đội nhỏ, sử dụng chiều cao nhỏ hơn để các trận Bán kết/Chung kết không chiếm quá nhiều không gian.
   let baseHeight;
-  if (totalPlayers <= 4) baseHeight = 60;
-  else if (totalPlayers <= 8) baseHeight = 65;
-  else if (totalPlayers <= 16) baseHeight = 70;
-  else baseHeight = 75;
+  if (totalPlayers <= 4) baseHeight = 60;         // 2 vòng: BK và CK
+  else if (totalPlayers <= 8) baseHeight = 50;    // 3 vòng: Tứ kết, Bán kết, Chung kết
+  else if (totalPlayers <= 16) baseHeight = 60;   // 4 vòng
+  else baseHeight = 70;                           // 5 vòng trở lên
   const columnWidth = 220; // width of each round column
   const colGap = 40; // gap between columns
   // Build header labels aligned with column widths

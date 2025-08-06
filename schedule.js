@@ -77,16 +77,18 @@ function displaySchedule() {
                         <span class="match-bracket">${game.bracket}</span>
                         <span style="font-size:0.98em;margin-left:3px;">${game.p1.name}</span>
                     </span>
-                    <input type="number" min="0" max="99" maxlength="2"
-                        class="score-input text-center"
-                        id="score1_${court.court}_${idx2}" style="width:2.8em"
-                        value="${saved ? saved.score1 : ''}" />
-                    <span style="min-width:12px;text-align:center;font-weight:bold;">-</span>
-                    <input type="number" min="0" max="99" maxlength="2"
-                        class="score-input text-center"
-                        id="score2_${court.court}_${idx2}" style="width:2.8em"
-                        value="${saved ? saved.score2 : ''}" />
-                    <span class="match-player right" style="margin-right:8px;">${game.p2.name}</span>
+                    <div class="score-wrap">
+                        <input type="number" min="0" max="99" maxlength="2"
+                            class="score-input text-center"
+                            id="score1_${court.court}_${idx2}" style="width:2.8em"
+                            value="${saved ? saved.score1 : ''}" />
+                        <span style="min-width:12px;text-align:center;font-weight:bold;">-</span>
+                        <input type="number" min="0" max="99" maxlength="2"
+                            class="score-input text-center"
+                            id="score2_${court.court}_${idx2}" style="width:2.8em"
+                            value="${saved ? saved.score2 : ''}" />
+                    </div>
+                    <span class="match-player right">${game.p2.name}</span>
                     <button
                         class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs font-bold save-match-btn"
                         data-court="${court.court}" data-idx="${idx2}" style="min-width:62px">

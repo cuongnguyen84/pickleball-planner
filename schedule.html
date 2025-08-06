@@ -24,18 +24,25 @@
 .match-player {
     display: flex;
     align-items: center;
-    min-width: 140px;
-    max-width: 185px;
+    flex: 1;
+    min-width: 0;
     font-weight: 500;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: break-word;
     overflow: hidden;
-    text-overflow: ellipsis;
     font-size: 0.98em;
 }
 .match-player.right {
-    justify-content: flex-start;
-    text-align: left;
-    margin-left: 10px;
+    justify-content: flex-end;
+    text-align: right;
+    margin-left: 0;
+    margin-right: 0;
+}
+.score-wrap {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 0.4em;
 }
 .match-bracket {
     display: inline-flex;

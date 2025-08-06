@@ -761,33 +761,56 @@ function renderBracket(numTeams) {
     rounds.push(next);
   }
 
-  // Render toàn bộ các vòng
-  let html = '';
-  for (let r = 0; r < rounds.length; ++r) {
-    html += `<div class="ko-section"><div class="ko-title">${roundLabels[r]}:</div>`;
-    html += rounds[r].map((m,i) => {
-      let matchId = `R${r}_${i}`;
-      let result = getKoResult(matchId);
-      return `
-  <div class="ko-match">
-    <span class="ko-seed">${r === rounds.length-1 ? "CK" : r === rounds.length-2 ? "BK"+(i+1) : (i+1)}</span>
-    <span class="ko-player">${
-      m.p1 ? m.p1.name + (m.p1.pos ? ` <span style="color:#888; font-size:0.97em;">(${m.p1.pos} ${m.p1.bracket})</span>` : "") : "?"
-    }</span>
-    <input class="ko-score" type="number" min="0" max="99" value="${result.score1||''}" id="score_${matchId}_1"/>
-    <span class="ko-sep">-</span>
-    <input class="ko-score" type="number" min="0" max="99" value="${result.score2||''}" id="score_${matchId}_2"/>
-    <span class="ko-player">${
-      m.p2 ? m.p2.name + (m.p2.pos ? ` <span style="color:#888; font-size:0.97em;">(${m.p2.pos} ${m.p2.bracket})</span>` : "") : "?"
-    }</span>
-    <button class="ko-btn" onclick="handleSaveKoScore('${matchId}')">Lưu điểm</button>
-  </div>
-`;
-
-    }).join('');
-    html += `</div>`;
+  // Render bracket grid layout
+  // Determine total rows for grid: 2 ** number of rounds
+  const roundCount = rounds.length;
+  const totalRows = Math.pow(2, roundCount);
+  // Build header labels above grid using a grid so labels align with columns
+  let headerHtml = `<div class="bracket-header" style="display: grid; grid-template-columns: repeat(${roundCount}, 1fr); column-gap: 20px; margin-bottom: 0.5rem;">`;
+  for (let r = 0; r < roundCount; ++r) {
+    headerHtml += `<div class="text-center font-bold">${roundLabels[r]}</div>`;
   }
-  document.getElementById('koBracket').innerHTML = html;
+  headerHtml += '</div>';
+  // Start grid container
+  let gridHtml = `<div class="bracket-grid" style="grid-template-columns: repeat(${roundCount}, 1fr); grid-template-rows: repeat(${totalRows}, 60px);">`;
+  for (let r = 0; r < rounds.length; ++r) {
+    const matches = rounds[r];
+    for (let i = 0; i < matches.length; ++i) {
+      const m = matches[i];
+      const matchId = `R${r}_${i}`;
+      const result = getKoResult(matchId);
+      const rowSpan = 1 << r;
+      const rowStart = (1 << r) + i * (1 << (r + 1));
+      // Determine winner to highlight
+      const winner = getWinner(m.p1, m.p2, matchId);
+      const p1Winner = !!(winner && m.p1 && winner.name === m.p1.name);
+      const p2Winner = !!(winner && m.p2 && winner.name === m.p2.name);
+      // Build match card
+      let card = `<div class="match-card" style="grid-column:${r+1}; grid-row:${rowStart} / span ${rowSpan};">`;
+      // Seed/round indicator
+      card += `<div class="match-seed">${r === roundCount - 1 ? 'CK' : r === roundCount - 2 ? 'BK' + (i + 1) : (i + 1)}</div>`;
+      // Player 1
+      const p1Name = m.p1 ? m.p1.name : '?';
+      const p1Info = (m.p1 && m.p1.pos) ? ` <span style="color:#777; font-size:0.85em;">(${m.p1.pos} ${m.p1.bracket})</span>` : '';
+      card += `<div class="player-line${p1Winner ? ' winner-line' : ''}">` +
+              `<span>${p1Name}${p1Info}</span>` +
+              `<input class="score-input" type="number" min="0" max="99" value="${result.score1 || ''}" id="score_${matchId}_1"/>` +
+              `</div>`;
+      // Player 2
+      const p2Name = m.p2 ? m.p2.name : '?';
+      const p2Info = (m.p2 && m.p2.pos) ? ` <span style="color:#777; font-size:0.85em;">(${m.p2.pos} ${m.p2.bracket})</span>` : '';
+      card += `<div class="player-line${p2Winner ? ' winner-line' : ''}">` +
+              `<span>${p2Name}${p2Info}</span>` +
+              `<input class="score-input" type="number" min="0" max="99" value="${result.score2 || ''}" id="score_${matchId}_2"/>` +
+              `</div>`;
+      // Save button
+      card += `<div class="text-right"><button class="save-btn" onclick="handleSaveKoScore('${matchId}')">Lưu</button></div>`;
+      card += `</div>`;
+      gridHtml += card;
+    }
+  }
+  gridHtml += '</div>';
+  document.getElementById('koBracket').innerHTML = headerHtml + gridHtml;
 }
 
 

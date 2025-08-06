@@ -732,19 +732,36 @@ function renderBracket(numTeams) {
   console.log("==> KO Matches:", koPlayers);            // kiểm tra
 
   let qf = genKOMatches(numTeams, koPlayers);
+  /*
+   * Đôi khi logic chọn người vào Knockout trả về nhiều trận hơn cần thiết (ví dụ:
+   * người dùng chọn 4 đội nhưng koPlayers có 8 đội do BXH phức tạp). Để hiển thị
+   * đúng số cặp vòng đầu, chúng ta căn cứ vào số VĐV thực tế thay vì tham số
+   * numTeams. Số trận vòng đầu luôn bằng một nửa số VĐV tham dự vòng Knockout.
+   */
+  const totalPlayers = koPlayers.length;
+  let expectedMatches = Math.max(1, Math.floor(totalPlayers / 2));
+  if (Array.isArray(qf) && qf.length > expectedMatches) {
+    qf = qf.slice(0, expectedMatches);
+  }
   console.log("Kết quả KO matches:", qf);
 
-
-  // Xác định số vòng (8 đội: 3 vòng, 16 đội: 4 vòng)
+  // Xác định số vòng dựa trên số VĐV thực tế. Ví dụ: 4 VĐV -> 2 vòng, 8 VĐV -> 3 vòng.
   let rounds = [];
   let current = qf;
-  let totalRounds = Math.log2(qf.length * 2);
+  // totalRounds = log2(số đội), làm tròn lên để xử lý trường hợp không phải lũy thừa 2
+  let totalRounds = Math.ceil(Math.log2(Math.max(1, totalPlayers)));
 
-  // Label cho từng vòng
-  let roundLabels = ["Vòng 1/8", "Tứ kết", "Bán kết", "Chung kết"];
-  if (qf.length === 4) roundLabels = ["Tứ kết", "Bán kết", "Chung kết"];
-  if (qf.length === 2) roundLabels = ["Bán kết", "Chung kết"];
-  if (qf.length === 1) roundLabels = ["Chung kết"];
+  // Label cho từng vòng.  Sử dụng nhãn ngắn gọn và tùy theo tổng số vòng.
+  let roundLabels;
+  if (expectedMatches >= 8) {
+    roundLabels = ["Vòng 1/16", "Vòng 1/8", "Tứ kết", "Bán kết", "Chung kết"];
+  } else if (expectedMatches === 4) {
+    roundLabels = ["Tứ kết", "Bán kết", "Chung kết"];
+  } else if (expectedMatches === 2) {
+    roundLabels = ["Bán kết", "Chung kết"];
+  } else {
+    roundLabels = ["Chung kết"];
+  }
 
   // Sinh toàn bộ bracket các vòng
   rounds.push(current);
@@ -754,8 +771,8 @@ function renderBracket(numTeams) {
     for (let i = 0; i < prev.length; i += 2) {
       let matchId1 = `R${r-1}_${i}`;
       let matchId2 = `R${r-1}_${i+1}`;
-      let w1 = getWinner(prev[i].p1, prev[i].p2, matchId1) || {name: `Thắng ${roundLabels[r-1]} ${i+1}`};
-      let w2 = getWinner(prev[i+1].p1, prev[i+1].p2, matchId2) || {name: `Thắng ${roundLabels[r-1]} ${i+2}`};
+      let w1 = getWinner(prev[i].p1, prev[i].p2, matchId1) || {name: `Thắng ${roundLabels[Math.max(0, (totalRounds - r) - 1)]} ${i+1}`};
+      let w2 = getWinner(prev[i+1].p1, prev[i+1].p2, matchId2) || {name: `Thắng ${roundLabels[Math.max(0, (totalRounds - r) - 1)]} ${i+2}`};
       next.push({p1: w1, p2: w2});
     }
     rounds.push(next);
@@ -763,23 +780,39 @@ function renderBracket(numTeams) {
 
   // Render bracket using absolute positioning.  This avoids overflowing cards
   // when matches contain multiple lines and works for any number of rounds.
-  const roundCount = rounds.length;
+  // Determine how many rounds should be drawn based on the number of teams.
+  let expectedRounds = Math.ceil(Math.log2(Math.max(1, totalPlayers)));
+  // Fallback in case expectedRounds is not finite
+  if (!Number.isFinite(expectedRounds) || expectedRounds < 1) expectedRounds = rounds.length;
+  // Only render the minimum between the rounds computed by genKOMatches and the expected rounds.
+  const roundCount = Math.min(rounds.length, expectedRounds);
+  // Slice rounds to render only necessary rounds
+  const roundsToRender = rounds.slice(0, roundCount);
+  // Total rows for positioning: 2^roundCount
   const totalRows = Math.pow(2, roundCount);
-  // Dimensions in pixels
-  const baseHeight = 80; // height per grid row
+  // Kích thước dynamic: thu nhỏ cho ít vòng để tránh ô quá cao
+  let baseHeight;
+  if (totalPlayers <= 4) baseHeight = 60;
+  else if (totalPlayers <= 8) baseHeight = 65;
+  else baseHeight = 70;
   const columnWidth = 220; // width of each round column
   const colGap = 40; // gap between columns
   // Build header labels aligned with column widths
   let headerHtml = '<div class="bracket-header flex mb-2">';
+  // Compute dynamic labels based on number of rounds: final, semi‑final, quarter‑final, etc.
+  const labelsByLevel = ['Chung kết','Bán kết','Tứ kết','Vòng 1/8','Vòng 1/16','Vòng 1/32'];
   for (let r = 0; r < roundCount; ++r) {
-    headerHtml += `<div style="width:${columnWidth}px;text-align:center;font-weight:bold;">${roundLabels[r]}</div>`;
+    // Determine label: last round (highest index) gets first entry (Chung kết)
+    const idxFromEnd = roundCount - 1 - r;
+    const label = labelsByLevel[Math.min(idxFromEnd, labelsByLevel.length - 1)];
+    headerHtml += `<div style="width:${columnWidth}px;text-align:center;font-weight:bold;">${label}</div>`;
     if (r < roundCount - 1) headerHtml += `<div style="width:${colGap}px;"></div>`;
   }
   headerHtml += '</div>';
   // Container for absolute-positioned match cards
   let containerHtml = `<div style="position:relative;height:${totalRows * baseHeight}px;">`;
-  for (let r = 0; r < rounds.length; ++r) {
-    const matches = rounds[r];
+  for (let r = 0; r < roundCount; ++r) {
+    const matches = roundsToRender[r];
     for (let i = 0; i < matches.length; ++i) {
       const m = matches[i];
       const matchId = `R${r}_${i}`;
